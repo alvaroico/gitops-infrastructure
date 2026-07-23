@@ -1,0 +1,14 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: eos-ingress-dev
+  namespace: eos-dev
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`eos-dev.alvaroico-teste.com.br`)
+      kind: Rule
+      services:
+        - name: eos-api
+          port: 3000

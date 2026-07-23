@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eos
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # Se o repo de infraestrutura estiver no GitHub:
+    # repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
+    # Para teste local no cluster:
+    repoURL: "https://github.com/alvaroico/eos.git"
+    targetRevision: alvaroico
+    path: k8s/overlays/dev
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: eos
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

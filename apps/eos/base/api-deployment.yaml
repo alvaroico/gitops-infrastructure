@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: eos-uploads
+  namespace: eos
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eos-api
+  namespace: eos
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: eos-api
+  template:
+    metadata:
+      labels:
+        app: eos-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/alvaroico/eos:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: eos-config
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: eos-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: eos-secrets
+                  key: POSTGRES_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: eos-secrets
+                  key: JWT_SECRET
+            - name: MAILTRAP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: eos-secrets
+                  key: MAILTRAP_USERNAME
+            - name: MAILTRAP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: eos-secrets
+                  key: MAILTRAP_API_KEY
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/public/images
+          readinessProbe:
+            httpGet:
+              path: /Swagger
+              port: 3000
+            initialDelaySeconds: 15
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 30
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: eos-uploads
