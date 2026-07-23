@@ -11,7 +11,8 @@ gitops-infrastructure/
 │   ├── 01-bootstrap-vm.sh              # Instala k3s, kubectl, kubeseal e ferramentas base
 │   ├── 02-setup-argocd.sh              # Instala ArgoCD + IngressRoute no Traefik
 │   ├── 03-setup-sealed-secrets.sh      # Instala Bitnami Sealed Secrets Controller
-│   └── 04-configure-firewall.sh        # Aplica políticas de firewall UFW (Zero Trust)
+│   ├── 04-configure-firewall.sh        # Aplica políticas de firewall UFW (Zero Trust)
+│   └── 05-add-private-repo-to-argocd.sh# Cadastra repositórios privados do GitHub no ArgoCD
 ├── docs/                               # Documentação detalhada de arquitetura e operação
 │   ├── 01-visao-geral-arquitetura.md   # Arquitetura GitOps e fluxo de dados
 │   ├── 02-mapeamento-hosts-dns.md       # Configuração dos domínios em /etc/hosts

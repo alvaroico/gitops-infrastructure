@@ -23,11 +23,11 @@
      gitops-infrastructure/
      └── apps/
          ├── eos/
-         │   ├── base/ (deployment.yaml, service.yaml, configmap.yaml)
-         │   └── overlays/dev/ (ingressroute-eos.yaml)
+         │   ├── base/ (kustomization.yaml, deployment.yaml, service.yaml, configmap.yaml)
+         │   └── overlays/dev/ (kustomization.yaml, ingressroute-eos.yaml)
          ├── web/
-         │   ├── base/ (deployment.yaml, service.yaml)
-         │   └── overlays/dev/ (ingressroute-web.yaml)
+         │   ├── base/ (kustomization.yaml, deployment.yaml, service.yaml)
+         │   └── overlays/dev/ (kustomization.yaml, ingressroute-web.yaml)
          └── ecommerce/
              └── ...
      ```

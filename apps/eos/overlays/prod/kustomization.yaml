@@ -4,10 +4,7 @@ kind: Kustomization
 namespace: eos-prod
 
 resources:
-  - '../../base/configmap.yaml'
-  - '../../base/postgres.yaml'
-  - '../../base/api-deployment.yaml'
-  - '../../base/api-service.yaml'
+  - '../../base'
   - 'ingressroute-eos-prod.yaml'
 
 images:

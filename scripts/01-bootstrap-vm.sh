@@ -15,24 +15,41 @@ else
     curl -sfL https://get.k3s.io | sh -
 fi
 
-echo "=== 3. CONFIGURANDO KUBECONFIG EM ~/.kube/config ==="
+echo "=== 3. CONFIGURANDO KUBECONFIG EM ~/.kube/config E PERMISSÕES ==="
 mkdir -p ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 sudo chown "$USER":"$USER" ~/.kube/config
 chmod 600 ~/.kube/config
 export KUBECONFIG=~/.kube/config
 
+# Adicionar export KUBECONFIG no ~/.bashrc do usuário caso ainda não exista
+if ! grep -q 'KUBECONFIG=~/.kube/config' ~/.bashrc 2>/dev/null; then
+    echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
+    echo "Adicionado 'export KUBECONFIG=~/.kube/config' no ~/.bashrc"
+fi
+
 echo "=== 4. INSTALANDO A CLI DO KUBESEAL (SEALED SECRETS) ==="
 if command -v kubeseal &>/dev/null; then
     echo "kubeseal CLI já está instalada."
 else
-    KUBESEAL_VERSION=$(curl -s https://api.github.com/repos/bitnami-labs/sealed-secrets/releases/latest | jq -r .tag_name | sed 's/^v//')
-    echo "Versão mais recente do kubeseal: $KUBESEAL_VERSION"
-    curl -sL "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz" | tar -xvz kubeseal
+    ARCH=$(uname -m)
+    if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+        KUBESEAL_ARCH="arm64"
+    else
+        KUBESEAL_ARCH="amd64"
+    fi
+
+    KUBESEAL_VERSION=$(curl -s https://api.github.com/repos/bitnami-labs/sealed-secrets/releases/latest | jq -r .tag_name 2>/dev/null | sed 's/^v//' || echo "0.26.0")
+    if [[ "$KUBESEAL_VERSION" == "null" || -z "$KUBESEAL_VERSION" ]]; then
+        KUBESEAL_VERSION="0.26.0"
+    fi
+
+    echo "Versão selecionada do kubeseal: $KUBESEAL_VERSION (Arquitetura: $KUBESEAL_ARCH)"
+    curl -sL "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-${KUBESEAL_ARCH}.tar.gz" | tar -xvz kubeseal
     sudo install -m 755 kubeseal /usr/local/bin/kubeseal
     rm -f kubeseal
 fi
 
 echo ""
 echo "=== BOOTSTRAP DA VM CONCLUÍDO COM SUCESSO! ==="
-echo "Você pode verificar o cluster com: kubectl get nodes"
+echo "Dica: Para atualizar a variável na sessão atual, rode: export KUBECONFIG=~/.kube/config"
