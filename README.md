@@ -7,12 +7,13 @@ Repositório local de procedimentos, scripts automatizados e documentações de 
 ```
 gitops-infrastructure/
 ├── README.md                           # Este documento principal
-├── scripts/                            # Scripts executáveis de provisionamento
+├── scripts/                            # Scripts executáveis de provisionamento e backup
 │   ├── 01-bootstrap-vm.sh              # Instala k3s, kubectl, kubeseal e ferramentas base
 │   ├── 02-setup-argocd.sh              # Instala ArgoCD + IngressRoute no Traefik
 │   ├── 03-setup-sealed-secrets.sh      # Instala Bitnami Sealed Secrets Controller
 │   ├── 04-configure-firewall.sh        # Aplica políticas de firewall UFW (Zero Trust)
-│   └── 05-add-private-repo-to-argocd.sh# Cadastra repositórios privados do GitHub no ArgoCD
+│   ├── 05-add-private-repo-to-argocd.sh# Cadastra repositórios privados do GitHub no ArgoCD
+│   └── 06-backup-database.sh          # Automação de backup do PostgreSQL e PVCs do k3s
 ├── docs/                               # Documentação detalhada de arquitetura e operação
 │   ├── 01-visao-geral-arquitetura.md   # Arquitetura GitOps e fluxo de dados
 │   ├── 02-mapeamento-hosts-dns.md       # Configuração dos domínios em /etc/hosts
@@ -21,7 +22,8 @@ gitops-infrastructure/
 │   ├── 05-guia-replicacao-do-zero.md   # Roteiro completo para subir uma VM limpa
 │   ├── 06-adicionando-novos-projetos.md # Como adicionar novos apps (ex: WEB) no cluster
 │   ├── 07-padrao-repositorio-centralizado-k8s.md # Padrão sem K8s no repo da aplicação
-│   └── 08-ambientes-dev-e-prod.md      # Separação multiambiente (Dev vs Prod)
+│   ├── 08-ambientes-dev-e-prod.md      # Separação multiambiente (Dev vs Prod)
+│   └── 09-estrategia-de-backup.md      # Guia de backup/restauração do Postgres e PVCs
 ├── apps/                               # CENTRAL DE MANIFESTOS K8S DE TODAS AS APPS
 │   └── eos/
 │       ├── base/                       # Manifestos base (Deployment, Service, ConfigMap)
@@ -45,5 +47,6 @@ gitops-infrastructure/
    ./02-setup-argocd.sh
    ./03-setup-sealed-secrets.sh
    ./04-configure-firewall.sh
+   ./05-add-private-repo-to-argocd.sh
    ```
 3. Consulte os guias em [`docs/`](docs/) para o passo a passo completo.

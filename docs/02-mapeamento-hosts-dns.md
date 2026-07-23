@@ -1,6 +1,16 @@
 # Mapeamento de Hosts e DNS para Ambiente Local
 
-Para acessar a interface do ArgoCD e a API EOS usando os domínios customizados `argocd.alvaroico-teste.com.br` e `eos.alvaroico-teste.com.br`, é necessário mapear o arquivo `hosts` tanto na Máquina Virtual quanto na Máquina Host externa.
+Para acessar a interface do ArgoCD e as APIs do projeto EOS em ambos os ambientes (**Dev** e **Prod**), é necessário mapear os domínios no arquivo `hosts` tanto na Máquina Virtual quanto na Máquina Host externa.
+
+---
+
+## Domínios do Sistema
+
+| Domínio | Ambiente | Destino no K8s |
+|---|---|---|
+| `argocd.alvaroico-teste.com.br` | ArgoCD Management UI | Service `argocd-server:80` (namespace `argocd`) |
+| `eos-dev.alvaroico-teste.com.br` | API EOS (Desenvolvimento) | Service `eos-api:3000` (namespace `eos-dev`) |
+| `eos.alvaroico-teste.com.br` | API EOS (Produção) | Service `eos-api:3000` (namespace `eos-prod`) |
 
 ---
 
@@ -16,6 +26,7 @@ sudo nano /etc/hosts
 ### Adicionar as seguintes linhas:
 ```text
 127.0.0.1 argocd.alvaroico-teste.com.br
+127.0.0.1 eos-dev.alvaroico-teste.com.br
 127.0.0.1 eos.alvaroico-teste.com.br
 ```
 
@@ -33,6 +44,7 @@ sudo nano /etc/hosts
 Adicionar:
 ```text
 192.168.64.9 argocd.alvaroico-teste.com.br
+192.168.64.9 eos-dev.alvaroico-teste.com.br
 192.168.64.9 eos.alvaroico-teste.com.br
 ```
 
@@ -43,6 +55,7 @@ Abrir o Bloco de Notas como Administrador e editar:
 Adicionar:
 ```text
 192.168.64.9 argocd.alvaroico-teste.com.br
+192.168.64.9 eos-dev.alvaroico-teste.com.br
 192.168.64.9 eos.alvaroico-teste.com.br
 ```
 
@@ -54,7 +67,8 @@ Após salvar o arquivo `hosts`, teste no terminal:
 
 ```bash
 curl -I http://argocd.alvaroico-teste.com.br
+curl -I http://eos-dev.alvaroico-teste.com.br
 curl -I http://eos.alvaroico-teste.com.br
 ```
 
-A resposta esperada é um código HTTP (200 OK ou 303 Redirect para o ArgoCD).
+A resposta esperada em todos é o código **HTTP 200 OK**!
