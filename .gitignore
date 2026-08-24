@@ -1,0 +1,6 @@
+.DS_Store
+*.pem
+*.key
+*.tmp
+secrets-raw/*.env
+!secrets-raw/*.env.example

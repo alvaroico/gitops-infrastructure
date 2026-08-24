@@ -1,119 +1,104 @@
 # Guia Passo a Passo de Replicação do Zero
 
-Este guia contém a sequência exata de comandos para replicar toda a infraestrutura GitOps com ArgoCD, k3s, Traefik, Sealed Secrets, Firewall UFW e as aplicações EOS (**Dev** e **Prod**) em uma **nova Maquina Virtual limpa**.
+> Roteiro completo e testado em produção para provisionar do zero um cluster **k3s + ArgoCD + Bitnami Sealed Secrets + Traefik HTTPS + PostgreSQL** em uma nova máquina virtual limpa (Google Cloud, AWS, Hetzner, etc.).
 
 ---
 
-## Pré-requisitos
-- Uma VM Linux (Ubuntu 22.04 LTS ou Debian 12) recém-criada.
-- Acesso SSH com privilégios de `sudo`.
+## 1. Pré-requisitos e Sizing Recomendado da VM
+
+- **Sistema Operacional**: Ubuntu 22.04 LTS ou 24.04 LTS Minimal (x86_64).
+- **Recursos Recomendados (FinOps Ideal)**:
+  - **Instância**: 2 vCPUs dedicadas, 8 GB de RAM (ex: `e2-standard-2` no GCP ou equivalente).
+  - **Disco**: 50 GB SSD / Disco Balanceado (`pd-balanced`).
+  - **IP Público**: Estático / Reservado.
+  - **Firewall de Nuvem**: Portas liberadas: `22` (SSH), `80` (HTTP) e `443` (HTTPS).
+- **Proteção de Disco**: Agendamento de Snapshots diários de disco no console do provedor de nuvem (03:00 - 04:00 AM).
 
 ---
 
-## Sequência de Execução
+## 2. Sequência de Execução Automatizada (Scripts 01 a 10)
 
-### Passo 1: Clonar o Repositório de Infraestrutura
+### Passo 1: Conectar na VM e Clonar o Repositório
 ```bash
-mkdir -p /home/alvaroico/projects
-cd /home/alvaroico/projects
-# Se este repositório estiver local ou no GitHub:
-# git clone https://github.com/alvaroico/gitops-infrastructure.git
+git clone https://github.com/alvaroico/gitops-infrastructure.git
+cd gitops-infrastructure
 ```
 
-### Passo 2: Executar o Bootstrap da VM
-Instala o k3s, kubectl, jq, git e o CLI `kubeseal` (com detecção automática de arquitetura ARM64/AMD64 e inclusão do KUBECONFIG no `~/.bashrc`).
+### Passo 2: Executar o Bootstrap do Cluster K3s
+Instala o k3s, kubectl, jq, git, Traefik Ingress e o CLI `kubeseal`:
 ```bash
-cd /home/alvaroico/projects/gitops-infrastructure/scripts
-./01-bootstrap-vm.sh
+./scripts/01-bootstrap-vm.sh
 export KUBECONFIG=~/.kube/config
-```
-*Verificação:*
-```bash
-kubectl get nodes
 ```
 
 ### Passo 3: Instalar o ArgoCD
-Instala o ArgoCD no namespace `argocd`, habilita modo HTTP insecure e cria o IngressRoute no Traefik para `argocd.alvaroico-teste.com.br`.
+Instala os controllers oficiais do ArgoCD, configura modo insecure para proxy Traefik e cria o IngressRoute:
 ```bash
-./02-setup-argocd.sh
+./scripts/02-setup-argocd.sh
 ```
-*Verificação:*
-```bash
-kubectl get pods -n argocd
-```
+*(Anote o usuário `admin` e a senha gerada exibida ao final do script).*
 
-### Passo 4: Instalar o Sealed Secrets Controller
-Instala o controller do Bitnami Sealed Secrets (`v0.38.4/controller.yaml`) para gerenciamento de senhas criptografadas.
+### Passo 4: Instalar o Bitnami Sealed Secrets Controller
+Provisiona o controller do cofre e exporta a chave pública do cluster (`sealed-secrets-public-cert.pem`):
 ```bash
-./03-setup-sealed-secrets.sh
-```
-*Verificação:*
-```bash
-kubectl get pods -n kube-system | grep sealed-secrets
+./scripts/03-setup-sealed-secrets.sh
 ```
 
 ### Passo 5: Configurar o Firewall (UFW)
-Aplica as regras de segurança Zero Trust (bloqueia tudo e abre portas 22, 80 e 443 + rede k3s).
+Aplica regras restritas de segurança:
 ```bash
-./04-configure-firewall.sh
+./scripts/04-configure-firewall.sh
 ```
 
-### Passo 6: Criar Segredos e Implantar os Ambientes (Dev e Prod)
-
-#### 1. Criar Namespace e Secret de Desenvolvimento (`eos-dev`):
+### Passo 6: Cadastrar Repositório Privado e Credenciais GHCR no ArgoCD
 ```bash
-kubectl create namespace eos-dev --dry-run=client -o yaml | kubectl apply -f -
-kubectl create secret generic eos-secrets \
-  --namespace eos-dev \
-  --from-literal=POSTGRES_USER=admin \
-  --from-literal=POSTGRES_PASSWORD=eosdevsecretpass \
-  --from-literal=JWT_SECRET=superjwtkey123dev \
-  --from-literal=MAILTRAP_USERNAME=mailtrapuser \
-  --from-literal=MAILTRAP_API_KEY=mailtrapkey \
-  --dry-run=client -o yaml | kubectl apply -f -
+export GITHUB_TOKEN="ghp_seu_token_aqui"
+./scripts/05-add-private-repo-to-argocd.sh
 ```
 
-#### 2. Criar Namespace e Secret de Produção (`eos-prod`):
+### Passo 7: Configurar e Criptografar os Segredos dos Ambientes (Vault)
 ```bash
-kubectl create namespace eos-prod --dry-run=client -o yaml | kubectl apply -f -
-kubectl create secret generic eos-secrets \
-  --namespace eos-prod \
-  --from-literal=POSTGRES_USER=admin \
-  --from-literal=POSTGRES_PASSWORD=eosprodsecretpass \
-  --from-literal=JWT_SECRET=superjwtkey123prod \
-  --from-literal=MAILTRAP_USERNAME=mailtrapuser \
-  --from-literal=MAILTRAP_API_KEY=mailtrapkey \
-  --dry-run=client -o yaml | kubectl apply -f -
+# 1. Banco de Dados Dev
+cp secrets-raw/dev-postgres.env.example secrets-raw/dev-postgres.env
+./scripts/06-encrypt-secrets-vault.sh postgres dev
+
+# 2. Banco de Dados Prod
+cp secrets-raw/prod-postgres.env.example secrets-raw/prod-postgres.env
+./scripts/06-encrypt-secrets-vault.sh postgres prod
 ```
 
-#### 3. Cadastrar Repositório Privado no ArgoCD (com Token do GitHub):
+### Passo 8: Realizar o Deploy no ArgoCD
 ```bash
-./05-add-private-repo-to-argocd.sh
+# Deploy Dev / Homologação
+./scripts/07-deploy-homolog.sh
+
+# Deploy Produção
+./scripts/08-deploy-prod.sh
 ```
 
-#### 4. Aplicar as Applications no ArgoCD:
+### Passo 9: Ativar Certificados HTTPS Automáticos (Let's Encrypt)
 ```bash
-kubectl apply -f /home/alvaroico/projects/gitops-infrastructure/argocd-apps/eos-dev-application.yaml
-kubectl apply -f /home/alvaroico/projects/gitops-infrastructure/argocd-apps/eos-prod-application.yaml
+./scripts/09-setup-tls-letsencrypt.sh seu-email@empresa.com.br
 ```
 
-### Passo 7: Mapeamento de DNS (/etc/hosts)
-Edite o arquivo `/etc/hosts` na VM e na sua máquina Host:
-```text
-192.168.64.9 argocd.alvaroico-teste.com.br
-192.168.64.9 eos-dev.alvaroico-teste.com.br
-192.168.64.9 eos.alvaroico-teste.com.br
+### Passo 10: Validar e Agendar Rotina de Backup do Banco
+```bash
+./scripts/10-backup-postgres-database.sh dev
+./scripts/10-backup-postgres-database.sh prod
 ```
 
 ---
 
-## Validação Final de Funcionamento
+## 3. Validação de Funcionamento
 
-1. **ArgoCD Web UI**: Acesse `http://argocd.alvaroico-teste.com.br` (Usuário: `admin`).
-2. **API EOS Dev**: Acesse `http://eos-dev.alvaroico-teste.com.br/Swagger`.
-3. **API EOS Prod**: Acesse `http://eos.alvaroico-teste.com.br/Swagger`.
-4. **Checar Status no Cluster**:
+1. **Checar Status dos Pods:**
    ```bash
-   kubectl get pods,svc,ingressroute -n eos-dev
-   kubectl get pods,svc,ingressroute -n eos-prod
+   kubectl get pods -A
    ```
+2. **Checar Sincronização no ArgoCD:**
+   ```bash
+   kubectl get applications -n argocd
+   ```
+3. **Acessar Interfaces Web:**
+   - **ArgoCD**: `https://argocd.<IP>.sslip.io` (ou `https://argocd.dominio.com.br`)
+   - **Aplicações**: `https://app.<IP>.sslip.io` (ou `https://app.dominio.com.br`)
