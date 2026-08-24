@@ -27,3 +27,4 @@ done
 echo ""
 echo "=== APPLICATIONS DE PRODUÇÃO APLICADAS! ==="
 echo "Acompanhe o status e a sincronização no ArgoCD Dashboard."
+

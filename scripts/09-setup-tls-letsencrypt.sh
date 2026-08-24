@@ -52,3 +52,4 @@ echo "✅ Let's Encrypt ACME configurado com sucesso no Traefik!"
 echo "   Os certificados serão emitidos automaticamente para os domínios"
 echo "   configurados com 'tls.certResolver: letsencrypt' no IngressRoute."
 echo "=============================================================================="
+

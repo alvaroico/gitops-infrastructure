@@ -27,3 +27,4 @@ done
 echo ""
 echo "=== APPLICATIONS DE HOMOLOGAÇÃO / DEV APLICADAS! ==="
 echo "Acompanhe o status e a sincronização no ArgoCD Dashboard."
+

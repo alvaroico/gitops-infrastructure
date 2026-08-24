@@ -131,3 +131,4 @@ echo ""
 echo "=== SEALED SECRET GERADO COM SUCESSO! ==="
 echo "Arquivo gerado: ${OUTPUT_SEALED}"
 echo "Você pode comitar o arquivo '${OUTPUT_SEALED}' com segurança no Git."
+

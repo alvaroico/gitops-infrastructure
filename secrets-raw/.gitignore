@@ -1,3 +1,4 @@
 # Ignorar todos os arquivos .env reais contendo segredos em texto puro
 *.env
 !*.env.example
+

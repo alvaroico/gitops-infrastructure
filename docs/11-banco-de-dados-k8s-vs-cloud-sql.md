@@ -6,14 +6,14 @@
 
 ## 1. Comparativo Técnico e Financeiro
 
-| Critério | PostgreSQL no K8s (StatefulSet + PVC) | Cloud SQL / AWS RDS Gerenciado |
-| :--- | :--- | :--- |
-| **Custo Adicional** | **US\$ 0** (Aproveita a CPU, RAM e SSD da VM já contratada) | **US\$ 25 a US\$ 75/mês** por ambiente |
-| **Latência de Rede** | **Sub-milissegundo** (`postgres.namespace.svc:5432`) | 1 a 3ms (VPC Peering / Private Service Access) |
-| **Isolamento de Falhas** | StatefulSet isolado por namespace (`dev` vs `prod`) | Instância física/virtual totalmente separada |
-| **Backups** | Snapshot Diário de Disco GCP + `pg_dump` lógico agendado | Backups contínuos PITR (*Point-In-Time Recovery*) |
-| **Consumo de Memória** | ~80 MB a 150 MB por instância (ideal em VMs de 8GB RAM) | 0 MB na VM da aplicação |
-| **Recomendado para:** | **MVP, Startups, Homologação e Produção com FinOps otimizado** | **Grandes corporações com exigência estrita de auditoria/SLA** |
+| Critério                 | PostgreSQL no K8s (StatefulSet + PVC)                          | Cloud SQL / AWS RDS Gerenciado                                 |
+| :----------------------- | :------------------------------------------------------------- | :------------------------------------------------------------- |
+| **Custo Adicional**      | **US\$ 0** (Aproveita a CPU, RAM e SSD da VM já contratada)    | **US\$ 25 a US\$ 75/mês** por ambiente                         |
+| **Latência de Rede**     | **Sub-milissegundo** (`postgres.namespace.svc:5432`)           | 1 a 3ms (VPC Peering / Private Service Access)                 |
+| **Isolamento de Falhas** | StatefulSet isolado por namespace (`dev` vs `prod`)            | Instância física/virtual totalmente separada                   |
+| **Backups**              | Snapshot Diário de Disco GCP + `pg_dump` lógico agendado       | Backups contínuos PITR (_Point-In-Time Recovery_)              |
+| **Consumo de Memória**   | ~80 MB a 150 MB por instância (ideal em VMs de 8GB RAM)        | 0 MB na VM da aplicação                                        |
+| **Recomendado para:**    | **MVP, Startups, Homologação e Produção com FinOps otimizado** | **Grandes corporações com exigência estrita de auditoria/SLA** |
 
 ---
 

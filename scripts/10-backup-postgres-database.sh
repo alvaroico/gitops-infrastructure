@@ -60,3 +60,4 @@ echo "=== BACKUP CONCLUÍDO COM SUCESSO! ==="
 echo "Arquivo: ${BACKUP_FILE} (${FILE_SIZE})"
 echo "Retenção: Mantendo os últimos 15 backups..."
 find "${BACKUP_DIR}" -name "${DB_NAME}_*.sql.gz" -type f -mtime +15 -delete || true
+

@@ -30,8 +30,9 @@ spec:
 ```
 
 ### Por que usar o `sslip.io`?
+
 - **Zero Cadastro**: Qualquer IP no formato `<qualquer-subdominio>.<IP-PUBLICO>.sslip.io` resolve mundialmente para o IP fornecido em milissegundos.
-- **Let's Encrypt Compatível**: O `sslip.io` faz parte da **Public Suffix List (PSL)** oficial. Isso impede bloqueios por limites de taxa (*Rate Limiting*) na emissão de certificados.
+- **Let's Encrypt Compatível**: O `sslip.io` faz parte da **Public Suffix List (PSL)** oficial. Isso impede bloqueios por limites de taxa (_Rate Limiting_) na emissão de certificados.
 
 ---
 
@@ -62,7 +63,9 @@ function getApiBaseUrl(): string {
   }
 
   // Fallback padrão para variáveis de build ou localhost
-  const raw = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3333").replace(/\/+$/, "");
+  const raw = (
+    import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3333"
+  ).replace(/\/+$/, "");
   return raw.endsWith("/api/v1") ? raw : `${raw}/api/v1`;
 }
 ```
@@ -72,6 +75,7 @@ function getApiBaseUrl(): string {
 ## 3. Transição Transparente Sem Parada (Cutover)
 
 Quando o chamado de DNS no Registro.br/cPanel for finalizado apontando para o IP do cluster:
+
 1. O usuário acessa `https://sistema.empresa.com.br`.
 2. O Traefik intercepta o tráfego e emite o certificado Let's Encrypt para o domínio oficial automaticamente.
 3. O frontend identifica o domínio oficial e direciona chamadas para `https://api.empresa.com.br`.
