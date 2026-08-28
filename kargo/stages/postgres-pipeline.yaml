@@ -10,6 +10,13 @@ spec:
         name: gitops-repo
       sources:
         direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: kustomize-build
+          config:
+            path: apps/postgres/overlays/dev
+            outPath: out.yaml
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -24,3 +31,10 @@ spec:
       sources:
         stages:
           - postgres-dev
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: kustomize-build
+          config:
+            path: apps/postgres/overlays/prod
+            outPath: out.yaml

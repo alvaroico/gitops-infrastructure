@@ -10,6 +10,13 @@ spec:
         name: gitops-repo
       sources:
         direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: kustomize-build
+          config:
+            path: apps/eos/overlays/dev
+            outPath: out.yaml
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -24,3 +31,10 @@ spec:
       sources:
         stages:
           - dev # 👈 GATE: Só promove para Produção se tiver passado por Dev com sucesso
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: kustomize-build
+          config:
+            path: apps/eos/overlays/prod
+            outPath: out.yaml
