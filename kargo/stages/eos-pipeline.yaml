@@ -1,0 +1,40 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: dev
+  namespace: eos-platform
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: gitops-repo
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        # Sincroniza e aplica o overlay de Homologação/Dev
+        - uses: kustomize-build
+          config:
+            path: apps/eos/overlays/dev
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: eos-platform
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: gitops-repo
+      sources:
+        stages:
+          - dev # 👈 GATE: Só promove para Produção se tiver passado por Dev com sucesso
+  promotionTemplate:
+    spec:
+      steps:
+        # Sincroniza e aplica o overlay de Produção
+        - uses: kustomize-build
+          config:
+            path: apps/eos/overlays/prod

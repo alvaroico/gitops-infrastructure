@@ -1,0 +1,12 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: gitops-repo
+  namespace: eos-platform
+spec:
+  interval: 5m0s
+  subscriptions:
+    # 1. Monitora alterações declarativas no repositório de infraestrutura
+    - git:
+        repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
+        branch: main

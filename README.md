@@ -29,17 +29,25 @@ flowchart LR
 ## Estrutura do Repositório
 
 ```text
-gitops-infrastructure/
-├── README.md                           # Este guia principal
+├── kargo/                              # MANIFESTOS DECLARATIVOS DO KARGO (PROMOTION CONTROL PLANE)
+│   ├── project.yaml                    # Project 'eos-platform'
+│   ├── warehouse.yaml                  # Warehouse vigiando o repositório Git
+│   ├── ingressroute-kargo.yaml         # IngressRoute HTTPS no Traefik
+│   ├── credentials.yaml.example        # Gabarito de credenciais privadas Git
+│   └── stages/                         # Pipelines de promoção multiambiente
+│       ├── eos-pipeline.yaml           # Pipeline Dev -> Prod com Gate de segurança
+│       └── postgres-pipeline.yaml      # Pipeline do banco segregado
 ├── scripts/                            # Scripts executáveis de provisionamento e operação
 │   ├── 01-bootstrap-vm.sh              # Instala k3s, kubectl, kubeseal e ferramentas base
-│   ├── 02-setup-argocd.sh              # Instala ArgoCD + IngressRoute no Traefik
+│   ├── 02-setup-kargo.sh               # Instala Kargo Control Plane + cert-manager + IngressRoute
+│   ├── 02-setup-argocd.sh              # Instala ArgoCD + IngressRoute no Traefik (Legado / Alternativo)
 │   ├── 03-setup-sealed-secrets.sh      # Instala Bitnami Sealed Secrets Controller
 │   ├── 04-configure-firewall.sh        # Aplica políticas de firewall UFW (Zero Trust)
-│   ├── 05-add-private-repo-to-argocd.sh# Cadastra repositórios privados e credenciais GHCR no ArgoCD
+│   ├── 05-add-private-repo-to-kargo.sh # Cadastra credenciais do GitHub no Kargo
+│   ├── 05-add-private-repo-to-argocd.sh# Cadastra repositórios privados no ArgoCD
 │   ├── 06-encrypt-secrets-vault.sh     # Criptografa variáveis .env gerando SealedSecrets
-│   ├── 07-deploy-homolog.sh            # Aplica applications de Homologação/Dev no ArgoCD
-│   ├── 08-deploy-prod.sh               # Aplica applications de Produção no ArgoCD
+│   ├── 07-deploy-kargo-pipelines.sh    # Ativa todos os Pipelines de promoção no Kargo
+│   ├── 08-promote-kargo-stage.sh       # Helper CLI para promover versões entre Dev e Prod
 │   ├── 09-setup-tls-letsencrypt.sh     # Configura SSL automático Let's Encrypt no Traefik
 │   └── 10-backup-postgres-database.sh  # Automação de backup do PostgreSQL com compressão e retenção
 ├── docs/                               # Documentação detalhada de arquitetura e operação
@@ -53,7 +61,8 @@ gitops-infrastructure/
 │   ├── 08-ambientes-dev-e-prod.md      # Separação multiambiente (Dev vs Prod)
 │   ├── 09-estrategia-de-backup.md      # Guia de backup/restauração do Postgres e PVCs
 │   ├── 10-dual-routing-sslip-e-dns-temporario.md # Padrão de Dual-Routing (sslip.io + Let's Encrypt)
-│   └── 11-banco-de-dados-k8s-vs-cloud-sql.md # Matriz de decisão Postgres K8s vs Cloud SQL
+│   ├── 11-banco-de-dados-k8s-vs-cloud-sql.md # Matriz de decisão Postgres K8s vs Cloud SQL
+│   └── 12-kargo-multi-stage-promotion.md     # Guia do Kargo e esteira de promoção
 ├── secrets-raw/                        # Gabaritos locais de variáveis sensíveis (ignorado no Git)
 │   ├── dev-postgres.env.example
 │   └── prod-postgres.env.example
@@ -65,13 +74,14 @@ gitops-infrastructure/
 │       ├── base/
 │       └── overlays/
 └── argocd-apps/                        # Manifestos de Applications do ArgoCD
+    ├── eos-application.yaml
     ├── eos-dev-application.yaml
     └── eos-prod-application.yaml
 ```
 
 ---
 
-## Como Provisionar uma VM do Zero (Passo a Passo)
+## Como Provisionar uma VM do Zero com Kargo (Passo a Passo)
 
 ```bash
 # 1. Clonar repositório
@@ -80,19 +90,21 @@ cd gitops-infrastructure
 
 # 2. Executar provisionamento sequencial
 ./scripts/01-bootstrap-vm.sh
-./scripts/02-setup-argocd.sh
+./scripts/02-setup-kargo.sh
 ./scripts/03-setup-sealed-secrets.sh
 ./scripts/04-configure-firewall.sh
 
-# 3. Cadastrar credenciais Git e GHCR
+# 3. Cadastrar credenciais do GitHub no Kargo
 export GITHUB_TOKEN="ghp_seu_token"
-./scripts/05-add-private-repo-to-argocd.sh
+./scripts/05-add-private-repo-to-kargo.sh
 
-# 4. Encriptar segredos e fazer deploy
+# 4. Encriptar segredos locais
 ./scripts/06-encrypt-secrets-vault.sh postgres dev
-./scripts/07-deploy-homolog.sh
 
-# 5. Ativar HTTPS com Let's Encrypt
+# 5. Ativar pipelines de promoção do Kargo
+./scripts/07-deploy-kargo-pipelines.sh
+
+# 6. Ativar HTTPS com Let's Encrypt
 ./scripts/09-setup-tls-letsencrypt.sh contato@empresa.com.br
 ```
 

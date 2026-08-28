@@ -1,0 +1,38 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: postgres-dev
+  namespace: eos-platform
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: gitops-repo
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: kustomize-build
+          config:
+            path: apps/postgres/overlays/dev
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: postgres-prod
+  namespace: eos-platform
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: gitops-repo
+      sources:
+        stages:
+          - postgres-dev
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: kustomize-build
+          config:
+            path: apps/postgres/overlays/prod
