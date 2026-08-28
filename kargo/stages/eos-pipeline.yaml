@@ -13,17 +13,17 @@ spec:
   promotionTemplate:
     spec:
       steps:
-        # 1. Clona o repositório no diretório de trabalho da promoção
+        # 1. Clona o repositório na subpasta 'src' (evita conflito do git worktree)
         - uses: git-clone
           config:
             repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
             checkout:
               - branch: main
-                path: .
+                path: src
         # 2. Compila os manifestos Kustomize de dev
         - uses: kustomize-build
           config:
-            path: apps/eos/overlays/dev
+            path: src/apps/eos/overlays/dev
             outPath: out.yaml
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -47,8 +47,8 @@ spec:
             repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
             checkout:
               - branch: main
-                path: .
+                path: src
         - uses: kustomize-build
           config:
-            path: apps/eos/overlays/prod
+            path: src/apps/eos/overlays/prod
             outPath: out.yaml
