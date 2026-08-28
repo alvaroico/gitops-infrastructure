@@ -13,6 +13,14 @@ spec:
   promotionTemplate:
     spec:
       steps:
+        # 1. Clona o repositório no diretório de trabalho da promoção
+        - uses: git-clone
+          config:
+            repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
+            checkout:
+              - branch: main
+                path: .
+        # 2. Compila os manifestos Kustomize de dev
         - uses: kustomize-build
           config:
             path: apps/eos/overlays/dev
@@ -34,6 +42,12 @@ spec:
   promotionTemplate:
     spec:
       steps:
+        - uses: git-clone
+          config:
+            repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
+            checkout:
+              - branch: main
+                path: .
         - uses: kustomize-build
           config:
             path: apps/eos/overlays/prod
