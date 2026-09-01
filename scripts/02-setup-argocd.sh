@@ -16,11 +16,21 @@ kubectl apply --server-side -n argocd \
 echo "Aguardando deployment do argocd-server ser registrado..."
 until kubectl -n argocd get deployment argocd-server >/dev/null 2>&1; do sleep 3; done
 
-echo "=== 3. CONFIGURANDO MODO INSECURE (HTTP ATRAVÉS DO TRAEFIK INGRESS) ==="
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "=== 3. CONFIGURANDO MODO INSECURE E HABILITANDO WEB TERMINAL ==="
 kubectl -n argocd patch configmap argocd-cmd-params-cm \
   --type merge -p '{"data":{"server.insecure":"true"}}'
 
-echo "Reiniciando argocd-server para aplicar o modo insecure..."
+kubectl -n argocd patch configmap argocd-cm \
+  --type merge -p '{"data":{"exec.enabled":"true"}}'
+
+if [ -f "${SCRIPT_DIR}/argocd-terminal-rbac.yaml" ]; then
+    echo "Aplicando RBAC para o terminal Web do ArgoCD..."
+    kubectl apply -f "${SCRIPT_DIR}/argocd-terminal-rbac.yaml"
+fi
+
+echo "Reiniciando argocd-server para aplicar as configurações..."
 kubectl -n argocd rollout restart deployment argocd-server
 kubectl -n argocd rollout status deployment argocd-server --timeout=300s
 
