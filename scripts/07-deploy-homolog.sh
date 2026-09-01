@@ -13,6 +13,9 @@ kubectl create namespace eos-dev --dry-run=client -o yaml | kubectl apply -f - |
 kubectl create namespace homolog --dry-run=client -o yaml | kubectl apply -f - || true
 
 echo "=== 2. APLICANDO APPLICATIONS DO ARGOCD ==="
+if [ -f "${ROOT_DIR}/argocd-apps/00-projects.yaml" ]; then
+    kubectl apply -f "${ROOT_DIR}/argocd-apps/00-projects.yaml"
+fi
 if [ -f "${ROOT_DIR}/argocd-apps/eos-dev-application.yaml" ]; then
     kubectl apply -f "${ROOT_DIR}/argocd-apps/eos-dev-application.yaml"
 fi
