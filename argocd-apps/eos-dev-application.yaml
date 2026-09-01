@@ -3,8 +3,12 @@ kind: Application
 metadata:
   name: eos-dev
   namespace: argocd
+  labels:
+    env: dev
+    tier: backend
+    app.kubernetes.io/part-of: eos
 spec:
-  project: default
+  project: dev
   source:
     repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
     targetRevision: main

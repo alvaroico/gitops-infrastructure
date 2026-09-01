@@ -3,8 +3,12 @@ kind: Application
 metadata:
   name: eos-prod
   namespace: argocd
+  labels:
+    env: prod
+    tier: backend
+    app.kubernetes.io/part-of: eos
 spec:
-  project: default
+  project: prod
   source:
     repoURL: "https://github.com/alvaroico/gitops-infrastructure.git"
     targetRevision: main

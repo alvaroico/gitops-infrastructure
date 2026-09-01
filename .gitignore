@@ -1,5 +1,6 @@
 .DS_Store
 *.pem
+!scripts/sealed-secrets-public-cert.pem
 *.key
 *.tmp
 secrets-raw/*.env
