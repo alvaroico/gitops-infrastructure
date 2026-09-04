@@ -48,10 +48,10 @@ echo "📊 4. STATUS ATUAL DOS RECURSOS DO CLUSTER"
 echo "=========================================================="
 if kubectl top nodes >/dev/null 2>&1; then
     echo "--- Consumo do Nó ---"
-    kubectl top nodes
+    kubectl top nodes || true
     echo ""
     echo "--- Top 10 Pods por Consumo de Memória ---"
-    kubectl top pods -A --sort-by=memory | head -n 11
+    (kubectl top pods -A --sort-by=memory 2>/dev/null | head -n 11) || true
 else
     echo "Aviso: metrics-server ainda não está respondendo métricas no momento."
 fi

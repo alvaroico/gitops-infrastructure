@@ -16,6 +16,11 @@ else
 fi
 
 echo "=== 3. CONFIGURANDO KUBECONFIG EM ~/.kube/config E PERMISSÕES ==="
+sudo mkdir -p /etc/rancher/k3s
+if ! grep -q "write-kubeconfig-mode" /etc/rancher/k3s/config.yaml 2>/dev/null; then
+    echo 'write-kubeconfig-mode: "0644"' | sudo tee -a /etc/rancher/k3s/config.yaml >/dev/null
+fi
+
 mkdir -p ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 sudo chown "$USER":"$USER" ~/.kube/config
@@ -27,6 +32,7 @@ if ! grep -q 'KUBECONFIG=~/.kube/config' ~/.bashrc 2>/dev/null; then
     echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
     echo "Adicionado 'export KUBECONFIG=~/.kube/config' no ~/.bashrc"
 fi
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml 2>/dev/null || true
 
 echo "=== 4. INSTALANDO A CLI DO KUBESEAL (SEALED SECRETS) ==="
 if command -v kubeseal &>/dev/null; then

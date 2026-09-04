@@ -106,6 +106,12 @@ export GITHUB_TOKEN="ghp_seu_token"
 
 # 6. Ativar HTTPS com Let's Encrypt
 ./scripts/09-setup-tls-letsencrypt.sh contato@empresa.com.br
+
+# 7. Manutenção e Otimização Periódica do Cluster
+./scripts/11-cluster-maintenance.sh
+
+# 8. Atualização Segura do Sistema Operacional (Host Linux / K3s)
+./scripts/12-upgrade-server-os.sh
 ```
 
 Consulte os guias completos em [`docs/`](docs/) para detalhes adicionais.

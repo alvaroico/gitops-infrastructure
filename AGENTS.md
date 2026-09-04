@@ -36,7 +36,7 @@ gitops-infrastructure/
 │   └── eos-prod-application.yaml
 ├── kargo/                      # Pipelines de promoção multi-estágio declarativos
 ├── secrets-raw/                # Gabaritos de variáveis (.env.example - ignorados no Git)
-├── scripts/                    # Automações de setup, deploy, kargo, backup e manutenção (01 a 11)
+├── scripts/                    # Automações de setup, deploy, kargo, backup e manutenção (01 a 12)
 └── docs/                       # Documentações técnicas de arquitetura, replicação e DNS
 ```
 
@@ -60,6 +60,8 @@ gitops-infrastructure/
    - Rotina automatizada de dump do PostgreSQL com compressão e retenção via `./scripts/10-backup-postgres-database.sh`.
 6. **Otimização e Limpeza do Cluster**:
    - Manutenção de pods concluídos/falhos, limpeza de imagens órfãs (`crictl rmi --prune`) e economia de RAM no ArgoCD via `./scripts/11-cluster-maintenance.sh`.
+7. **Atualização Segura do Servidor (Host & OS)**:
+   - Rotina controlada de atualização do sistema operacional Linux com backup automático prévio do PostgreSQL e parada graciosa do K3s antes de reboot via `./scripts/12-upgrade-server-os.sh`.
 
 ---
 
